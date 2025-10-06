@@ -1,5 +1,29 @@
-.icon {
-  width: 64px;
-  vertical-align: top;
-  border: 1px solid salmon;
+.button {
+  padding: 20px 40px;
+  font-size: 60px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  outline: none;
+  border: 3px solid #000000;
+  border-radius: 12px;
+
+  transition: transform 0.2s ease;
+}
+
+.button:hover {
+  transform: scale(1.1);
+}
+
+.button:active {
+  transform: scale(0.9);
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
 }

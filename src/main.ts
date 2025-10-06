@@ -1,6 +1,9 @@
-import exampleIconUrl from "./noun-paperclip-7598668-00449F.png";
-import "./style.css";
+//import exampleIconUrl from "./noun-paperclip-7598668-00449F.png";
+//<p>Example image asset: <img src="${exampleIconUrl}" class="icon" /></p>
 
+import "./style.css";
 document.body.innerHTML = `
-  <p>Example image asset: <img src="${exampleIconUrl}" class="icon" /></p>
-`;
+<div class = "button-container">
+  <button class="button" type = "button">🍞</button>
+</div>
+  `;
