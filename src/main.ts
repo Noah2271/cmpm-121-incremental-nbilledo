@@ -14,13 +14,20 @@ document.body.innerHTML = `
     <p id="counter" class="centered-text">0</br>Loaves of Bread</p>
   </div>
 `;
+// functions
+const updateDisplay = () => {
+  counterElement.innerHTML = `${counter} <br> Loaves of Bread`;
+};
 
-//Event Listeners
+// event listeners
 const button = document.getElementById("increment")!;
 const counterElement = document.getElementById("counter")!;
 
+setInterval(() => {
+  counter++;
+  updateDisplay();
+}, 1000);
 button.addEventListener("click", () => {
   counter++;
-  counterElement.innerHTML = `${counter} <br> Loaves of Bread`;
-  console.log("woop");
+  updateDisplay();
 });
