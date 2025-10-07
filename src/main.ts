@@ -4,6 +4,7 @@
 import "./style.css";
 // variables
 let counter: number = 0;
+let lastTime = performance.now();
 
 // html
 document.body.innerHTML = `
@@ -14,19 +15,26 @@ document.body.innerHTML = `
     <p id="counter" class="centered-text">0</br>Loaves of Bread</p>
   </div>
 `;
+
 // functions
 const updateDisplay = () => {
-  counterElement.innerHTML = `${counter} <br> Loaves of Bread`;
+  counterElement.innerHTML = `${Math.trunc(counter)} <br> Loaves of Bread`;
 };
+
+function updateCounter(currentTime: number) {
+  const deltaTime = (currentTime - lastTime) / 1000;
+
+  lastTime = currentTime;
+  counter += deltaTime;
+  updateDisplay();
+
+  requestAnimationFrame(updateCounter);
+}
 
 // event listeners
 const button = document.getElementById("increment")!;
 const counterElement = document.getElementById("counter")!;
-
-setInterval(() => {
-  counter++;
-  updateDisplay();
-}, 1000);
+requestAnimationFrame(updateCounter);
 button.addEventListener("click", () => {
   counter++;
   updateDisplay();
