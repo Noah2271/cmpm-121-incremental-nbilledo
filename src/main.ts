@@ -6,6 +6,7 @@ const StateVariables = {
   counter: 0,
   lastTime: performance.now(),
   autoMultiplier: 0,
+  clickValue: 1,
 };
 
 type Upgrade = {
@@ -22,12 +23,23 @@ const UPGRADES: { [key: string]: Upgrade } = {
   "auto-baker": {
     id: "auto-baker",
     name: "Auto-Baker",
-    description: "Produces a single loaf per second.",
+    description: "Produces a single loaf every five seconds.",
     cost: 10,
     costMultiplier: 1.2,
     count: 0,
     effect: () => {
-      StateVariables.autoMultiplier += 1;
+      StateVariables.autoMultiplier += 0.2;
+    },
+  },
+  "oven": {
+    id: "oven",
+    name: "oven",
+    description: "Upgrades your oven; produce an extra loaf per upgrade.",
+    cost: 100,
+    costMultiplier: 1.5,
+    count: 0,
+    effect: () => {
+      StateVariables.clickValue += 1;
     },
   },
 };
@@ -49,22 +61,22 @@ function updateCounterDisplay(): void {
 let lastFloor = -1;
 function updateShopDisplay(): void {
   const currentFloor = Math.floor(StateVariables.counter);
-  if (currentFloor === lastFloor) return;
+  if (currentFloor === lastFloor) return; // update shop periodically; if update too fast button stops working
   lastFloor = currentFloor;
 
-  Object.values(UPGRADES).forEach((upgrade) => {
+  Object.values(UPGRADES).forEach((upgrade) => { // grab button id
     const cost = getUpgradeCost(upgrade);
     const buttonId = `upgrade-button-${upgrade.id}`;
-    let button = document.getElementById(buttonId) as HTMLButtonElement | null;
+    let button = document.getElementById(buttonId) as HTMLButtonElement;
 
-    if (!button) {
+    if (!button) { // if button does not yet exist, create it; add it to shop
       button = document.createElement("button");
       button.id = buttonId;
       button.className = "upgrade-button";
       button.onclick = () => buyUpgrade(upgrade.id);
       shopElement.appendChild(button);
     }
-
+    // else, update the content of the button
     button.textContent = `${upgrade.name} (${upgrade.count}) - ${cost} loaves`;
     button.disabled = StateVariables.counter < cost;
     button.title = `${upgrade.description}\nOwned: ${upgrade.count}`;
@@ -74,7 +86,6 @@ function updateShopDisplay(): void {
 // Upgrade Handing
 function buyUpgrade(key: string): void {
   const upgrade = UPGRADES[key];
-
   const cost = getUpgradeCost(upgrade);
   if (StateVariables.counter >= cost) {
     StateVariables.counter -= cost;
@@ -116,7 +127,7 @@ const shopElement = document.getElementById("shop")!;
 
 // Event Handlers
 button.addEventListener("click", () => {
-  StateVariables.counter++;
+  StateVariables.counter += StateVariables.clickValue;
   updateCounterDisplay();
   updateShopDisplay();
 });
