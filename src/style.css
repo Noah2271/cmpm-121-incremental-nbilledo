@@ -2,7 +2,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: "MedievalSharp", cursive;
+  font-family: "Press Start 2P", monospace;
   background: #f9f5e9;
   color: #333;
   text-align: center;
@@ -64,6 +64,7 @@ body {
   font-size: 1rem;
   background-color: #fff8e6;
   border: 2px solid #000000;
+  font-family: "Press Start 2P", monospace;
   border-radius: 8px;
   cursor: pointer;
   width: 100%;

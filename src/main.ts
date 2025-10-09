@@ -23,8 +23,8 @@ type Upgrade = {
 const UPGRADES: { [key: string]: Upgrade } = {
   "auto-baker": {
     id: "auto-baker",
-    name: "Auto-Baker",
-    description: "Produces a single loaf every five seconds.",
+    name: "Baker",
+    description: "Hire a baker: Produces a loaf every five seconds.",
     cost: 10,
     costMultiplier: 1.2,
     count: 0,
@@ -32,10 +32,21 @@ const UPGRADES: { [key: string]: Upgrade } = {
       StateVariables.autoLoavesPerSecond += 0.2;
     },
   },
+  "bakery": {
+    id: "bakery",
+    name: "Bakery",
+    description: "Open a bakery: Produces a loaf every second.",
+    cost: 50,
+    costMultiplier: 1.3,
+    count: 0,
+    effect: () => {
+      StateVariables.autoLoavesPerSecond += 1;
+    },
+  },
   "oven": {
     id: "oven",
-    name: "oven",
-    description: "Upgrades your oven; produce an extra loaf per upgrade.",
+    name: "Oven",
+    description: "Upgrade your over: produce an extra loaf per click.",
     cost: 100,
     costMultiplier: 1.5,
     count: 0,
@@ -86,7 +97,8 @@ function updateUpgradeButton(
   upgrade: Upgrade,
   cost: number,
 ): void {
-  button.textContent = `${upgrade.name} (${upgrade.count}) - ${cost} loaves`;
+  button.innerHTML =
+    `${upgrade.name} (${upgrade.count})<br> Cost: ${cost} loaves`;
   button.disabled = StateVariables.counter < cost;
   button.title = `${upgrade.description}\nOwned: ${upgrade.count}`;
 }
@@ -111,7 +123,9 @@ function incrementAutoIncome(deltaTime: number): void {
 function updateCounterDisplay(): void {
   counterElement.innerHTML = `${
     Math.trunc(StateVariables.counter)
-  } <br> Loaves of Bread`;
+  } <br> Loaves of Bread <br> Current Loaves Baking A Second: ${
+    StateVariables.autoLoavesPerSecond.toFixed(1)
+  }`;
 }
 
 // Game loop per frame
@@ -132,7 +146,7 @@ document.body.innerHTML = `
       <button class="button" type="button" id="increment">🍞</button>
     </div>
     <div class="text-container">
-      <p id="counter" class="centered-text">0 <br> Loaves of Bread</p>
+      <p id="counter" class="centered-text">0 <br> Loaves of Bread<br> Current Loaves Baking Per Second: 0</p>
     </div>
   </div>
   <div id="shop"></div>
