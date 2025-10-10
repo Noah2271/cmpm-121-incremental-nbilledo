@@ -8,6 +8,7 @@ const StateVariables = {
   lastFloor: -1,
   autoLoavesPerSecond: 0,
   clickValue: 1,
+  totalLoaves: 0,
 };
 
 type Upgrade = {
@@ -59,6 +60,7 @@ const UPGRADES: { [key: string]: Upgrade } = {
 function updateDisplay() {
   updateShopDisplay();
   updateCounterDisplay();
+  updateStatsDisplay();
 }
 // Shop Handling
 function getUpgradeCost(upgrade: Upgrade): number {
@@ -97,8 +99,7 @@ function updateUpgradeButton(
   upgrade: Upgrade,
   cost: number,
 ): void {
-  button.innerHTML =
-    `${upgrade.name} (${upgrade.count})<br> Cost: ${cost} loaves`;
+  button.innerHTML = `${upgrade.name}<br> Cost: ${cost} loaves`;
   button.disabled = StateVariables.counter < cost;
   button.title = `${upgrade.description}\nOwned: ${upgrade.count}`;
 }
@@ -118,24 +119,36 @@ function buyUpgrade(key: string): void {
 // Bread Handling
 function incrementAutoIncome(deltaTime: number): void {
   StateVariables.counter += StateVariables.autoLoavesPerSecond * deltaTime;
+  StateVariables.totalLoaves += StateVariables.autoLoavesPerSecond * deltaTime;
 }
 
 function updateCounterDisplay(): void {
   counterElement.innerHTML = `${
     Math.trunc(StateVariables.counter)
-  } <br> Loaves of Bread <br> Current Loaves Baking A Second: ${
-    StateVariables.autoLoavesPerSecond.toFixed(1)
-  }`;
+  } <br> Loaves of Bread
+  `;
+}
+
+function updateStatsDisplay(): void {
+  statElement!.innerHTML = `
+    Statistics<br>
+    Total Loaves Baked: ${Math.trunc(StateVariables.totalLoaves)}<br>
+    Loaves Baking Per Second: ${
+    StateVariables.autoLoavesPerSecond.toFixed(2)
+  }<br>
+    Loaves Baked Per Click: ${StateVariables.clickValue}<br>
+    Bakers Hired: ${UPGRADES["auto-baker"].count}<br>
+    Bakeries Owned: ${UPGRADES["bakery"].count}<br>
+    Oven Level: ${UPGRADES["oven"].count + 1}<br>
+  `;
 }
 
 // Game loop per frame
 function gameLoop(currentTime: number): void {
   const deltaTime = (currentTime - StateVariables.lastTime) / 1000;
   StateVariables.lastTime = currentTime;
-
   incrementAutoIncome(deltaTime);
   updateDisplay();
-
   requestAnimationFrame(gameLoop);
 }
 
@@ -146,7 +159,10 @@ document.body.innerHTML = `
       <button class="button" type="button" id="increment"><img src="https://i.imgur.com/DIPDyK2.png" style="width: 150px; height: 150px;"></button>
     </div>
     <div class="text-container">
-      <p id="counter" class="centered-text">0 <br> Loaves of Bread<br> Current Loaves Baking Per Second: 0</p>
+      <p id="counter" class="centered-text"></p>
+    </div>
+    <div class="stat-box">
+    <p id="stats"></p>
     </div>
   </div>
   <div id="shop"></div>
@@ -155,10 +171,12 @@ document.body.innerHTML = `
 const button = document.getElementById("increment")!;
 const counterElement = document.getElementById("counter")!;
 const shopElement = document.getElementById("shop")!;
+const statElement = document.getElementById("stats");
 
 // Event Handlers
 button.addEventListener("click", () => {
   StateVariables.counter += StateVariables.clickValue;
+  StateVariables.totalLoaves += StateVariables.clickValue;
   updateDisplay();
 });
 
