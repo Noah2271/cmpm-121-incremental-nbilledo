@@ -1,7 +1,5 @@
-// Import CSS
 import "./style.css";
-
-// Object containers
+// Data Objects
 const StateVariables = {
   counter: 0,
   lastTime: performance.now(),
@@ -19,12 +17,15 @@ type Upgrade = {
   costMultiplier: number;
   effect: () => void;
   count: number;
+  label: string;
 };
 
-const UPGRADES: { [key: string]: Upgrade } = {
+// Upgrade definitions
+const UPGRADES: Record<string, Upgrade> = {
   "auto-baker": {
     id: "auto-baker",
     name: "Baker",
+    label: "Bakers Hired",
     description: "Hire a baker: Produces a loaf every five seconds.",
     cost: 10,
     costMultiplier: 1.2,
@@ -36,6 +37,7 @@ const UPGRADES: { [key: string]: Upgrade } = {
   "bakery": {
     id: "bakery",
     name: "Bakery",
+    label: "Bakeries Owned",
     description: "Open a bakery: Produces a loaf every second.",
     cost: 50,
     costMultiplier: 1.3,
@@ -47,43 +49,38 @@ const UPGRADES: { [key: string]: Upgrade } = {
   "oven": {
     id: "oven",
     name: "Oven",
-    description: "Upgrade your over: produce an extra loaf per click.",
+    label: "Oven Level",
+    description: "Upgrade your oven: produce an extra loaf per click.",
     cost: 100,
     costMultiplier: 1.5,
-    count: 0,
+    count: 1,
     effect: () => {
       StateVariables.clickValue += 1;
     },
   },
 };
 
-function updateDisplay() {
-  updateShopDisplay();
-  updateCounterDisplay();
-  updateStatsDisplay();
-}
-// Shop Handling
+// HTML
+document.body.innerHTML = `
+  <div id="main">
+    <button id="increment" class="button"><img src="https://i.imgur.com/DIPDyK2.png" width="150" height="150"></button>
+    <p id="counter" class="centered-text"></p>
+    <div class="stat-box"><p id="stats"></p></div>
+  </div>
+  <div id="shop"></div>
+`;
+
+// Document Constants
+const button = document.getElementById("increment")!;
+const counterElement = document.getElementById("counter")!;
+const shopElement = document.getElementById("shop")!;
+const statElement = document.getElementById("stats")!;
+
+//Shop Handling
 function getUpgradeCost(upgrade: Upgrade): number {
   return Math.floor(
     upgrade.cost * Math.pow(upgrade.costMultiplier, upgrade.count),
   );
-}
-
-function updateShopDisplay(): void {
-  const currentFloor = Math.floor(StateVariables.counter);
-  if (currentFloor === StateVariables.lastFloor) return;
-  StateVariables.lastFloor = currentFloor;
-
-  Object.values(UPGRADES).forEach((upgrade) => {
-    const cost = getUpgradeCost(upgrade);
-    const buttonId = `upgrade-button-${upgrade.id}`;
-    let button = document.getElementById(buttonId) as HTMLButtonElement;
-    if (!button) {
-      button = createUpgradeButton(upgrade, buttonId);
-      shopElement.appendChild(button);
-    }
-    updateUpgradeButton(button, upgrade, cost);
-  });
 }
 
 function createUpgradeButton(upgrade: Upgrade, id: string): HTMLButtonElement {
@@ -104,10 +101,30 @@ function updateUpgradeButton(
   button.title = `${upgrade.description}\nOwned: ${upgrade.count}`;
 }
 
-// Upgrade Handing
+function updateShopDisplay(): void {
+  const currentFloor = Math.floor(StateVariables.counter);
+  if (currentFloor === StateVariables.lastFloor) return;
+  StateVariables.lastFloor = currentFloor;
+
+  Object.values(UPGRADES).forEach((upgrade) => {
+    const cost = getUpgradeCost(upgrade);
+    const buttonId = `upgrade-button-${upgrade.id}`;
+    let button = document.getElementById(buttonId) as HTMLButtonElement;
+
+    if (!button) {
+      button = createUpgradeButton(upgrade, buttonId);
+      shopElement.appendChild(button);
+    }
+
+    updateUpgradeButton(button, upgrade, cost);
+  });
+}
+
+// Upgrade Handling
 function buyUpgrade(key: string): void {
   const upgrade = UPGRADES[key];
   const cost = getUpgradeCost(upgrade);
+
   if (StateVariables.counter >= cost) {
     StateVariables.counter -= cost;
     upgrade.count++;
@@ -116,69 +133,62 @@ function buyUpgrade(key: string): void {
   }
 }
 
-// Bread Handling
+// Bread Count Handling
 function incrementAutoIncome(deltaTime: number): void {
-  StateVariables.counter += StateVariables.autoLoavesPerSecond * deltaTime;
-  StateVariables.totalLoaves += StateVariables.autoLoavesPerSecond * deltaTime;
+  const income = StateVariables.autoLoavesPerSecond * deltaTime;
+  StateVariables.counter += income;
+  StateVariables.totalLoaves += income;
 }
 
 function updateCounterDisplay(): void {
-  counterElement.innerHTML = `${
-    Math.trunc(StateVariables.counter)
-  } <br> Loaves of Bread
+  counterElement.innerHTML = `
+    ${Math.trunc(StateVariables.counter)} <br> Loaves of Bread
   `;
 }
 
 function updateStatsDisplay(): void {
-  statElement!.innerHTML = `
+  const stats: string[] = [
+    `Total Loaves Baked: ${Math.trunc(StateVariables.totalLoaves)}`,
+    `Loaves Baking Per Second: ${
+      StateVariables.autoLoavesPerSecond.toFixed(2)
+    }`,
+    `Loaves Baked Per Click: ${StateVariables.clickValue}`,
+  ];
+
+  Object.values(UPGRADES).forEach((upgrade) => {
+    stats.push(`${upgrade.label}: ${upgrade.count}`);
+  });
+
+  statElement.innerHTML = `
     Statistics<br>
-    Total Loaves Baked: ${Math.trunc(StateVariables.totalLoaves)}<br>
-    Loaves Baking Per Second: ${
-    StateVariables.autoLoavesPerSecond.toFixed(2)
-  }<br>
-    Loaves Baked Per Click: ${StateVariables.clickValue}<br>
-    Bakers Hired: ${UPGRADES["auto-baker"].count}<br>
-    Bakeries Owned: ${UPGRADES["bakery"].count}<br>
-    Oven Level: ${UPGRADES["oven"].count + 1}<br>
+    ${stats.join("<br>")}
   `;
 }
 
-// Game loop per frame
+// Display Management
+function updateDisplay(): void {
+  updateShopDisplay();
+  updateCounterDisplay();
+  updateStatsDisplay();
+}
+
+// Game Loop
 function gameLoop(currentTime: number): void {
   const deltaTime = (currentTime - StateVariables.lastTime) / 1000;
   StateVariables.lastTime = currentTime;
+
   incrementAutoIncome(deltaTime);
   updateDisplay();
+
   requestAnimationFrame(gameLoop);
 }
 
-//HTML
-document.body.innerHTML = `
-  <div id="main">
-    <div class="button-container">
-      <button class="button" type="button" id="increment"><img src="https://i.imgur.com/DIPDyK2.png" style="width: 150px; height: 150px;"></button>
-    </div>
-    <div class="text-container">
-      <p id="counter" class="centered-text"></p>
-    </div>
-    <div class="stat-box">
-    <p id="stats"></p>
-    </div>
-  </div>
-  <div id="shop"></div>
-`;
-
-const button = document.getElementById("increment")!;
-const counterElement = document.getElementById("counter")!;
-const shopElement = document.getElementById("shop")!;
-const statElement = document.getElementById("stats");
-
-// Event Handlers
+//Event Listeners
 button.addEventListener("click", () => {
   StateVariables.counter += StateVariables.clickValue;
   StateVariables.totalLoaves += StateVariables.clickValue;
   updateDisplay();
 });
 
-// Start Calls
+// Game Start
 requestAnimationFrame(gameLoop);
