@@ -143,7 +143,7 @@ function gameLoop(currentTime: number): void {
 document.body.innerHTML = `
   <div id="main">
     <div class="button-container">
-      <button class="button" type="button" id="increment">🍞</button>
+      <button class="button" type="button" id="increment"><img src="https://i.imgur.com/DIPDyK2.png" style="width: 150px; height: 150px;"></button>
     </div>
     <div class="text-container">
       <p id="counter" class="centered-text">0 <br> Loaves of Bread<br> Current Loaves Baking Per Second: 0</p>
