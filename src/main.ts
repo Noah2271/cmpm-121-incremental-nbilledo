@@ -25,7 +25,7 @@ type Upgrade = {
 const UPGRADES: Record<string, Upgrade> = {
   "auto-baker": {
     id: "auto-baker",
-    name: "Baker",
+    name: "BAKER",
     label: "Bakers Hired",
     description: "Hire a baker: Produces 0.2 loaves per second.",
     cost: 10,
@@ -37,7 +37,7 @@ const UPGRADES: Record<string, Upgrade> = {
   },
   "bakery": {
     id: "bakery",
-    name: "Bakery",
+    name: "BAKERY",
     label: "Bakeries Owned",
     description: "Open a bakery: Produces a loaf every second.",
     cost: 50,
@@ -49,7 +49,7 @@ const UPGRADES: Record<string, Upgrade> = {
   },
   "sourdough": {
     id: "sourdough",
-    name: "Sourdough Starter",
+    name: "SOURDOUGH STARTER",
     label: "Sourdough Starters",
     description:
       "Give rise to a sourdough starter: Produce an extra half a loaf per click",
@@ -62,7 +62,7 @@ const UPGRADES: Record<string, Upgrade> = {
   },
   "oven": {
     id: "oven",
-    name: "Oven Upgrade",
+    name: "OVEN UPGRADE",
     label: "Oven Level",
     description: "Upgrade your oven: Produce an extra loaf per click.",
     cost: 100,
@@ -74,7 +74,7 @@ const UPGRADES: Record<string, Upgrade> = {
   },
   "minWage": {
     id: "minWage",
-    name: "Raise Minimum Wage",
+    name: "RAISE MINIMUM WAGE",
     description:
       "Pay your workers better: Bakers now produce 0.5 loaves per second.\nPURCHASEABLE ONCE",
     cost: 5000,
@@ -183,7 +183,7 @@ function incrementAutoIncome(deltaTime: number): void {
 
 function updateCounterDisplay(): void {
   counterElement.innerHTML = `
-    ${Math.trunc(StateVariables.counter)} <br> Loaves of Bread
+    ${Math.trunc(StateVariables.counter)} <br> LOAVES OF BREAD
   `;
 }
 
@@ -203,7 +203,7 @@ function updateStatsDisplay(): void {
   });
 
   statElement.innerHTML = `
-    Statistics<br>
+    STATISTICS<br>
     ${stats.join("<br>")}
   `;
 }
