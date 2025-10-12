@@ -14,7 +14,7 @@ type Upgrade = {
   name: string;
   description: string;
   cost: number;
-  costMultiplier?: number;
+  costMultiplier: number;
   oneTime?: boolean;
   effect: () => void;
   count: number;
@@ -79,6 +79,7 @@ const UPGRADES: Record<string, Upgrade> = {
       "Pay your workers better: Bakers now produce 0.5 loaves per second.\nPURCHASEABLE ONCE",
     cost: 5000,
     count: 0,
+    costMultiplier: 0,
     oneTime: true,
     effect: () => {
       StateVariables.autoLoavesPerSecond += UPGRADES["auto-baker"].count * 0.3;
