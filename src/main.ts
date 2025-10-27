@@ -1,14 +1,6 @@
 import "./style.css";
-// Data Objects
-const StateVariables = {
-  counter: 0,
-  lastTime: performance.now(),
-  lastFloor: -1,
-  autoLoavesPerSecond: 0,
-  clickValue: 1,
-  totalLoaves: 0,
-};
 
+//Upgrade Interface
 type Upgrade = {
   id: string;
   name: string;
@@ -21,7 +13,17 @@ type Upgrade = {
   label?: string;
 };
 
-// Upgrade definitions
+//Gamestate Variable Object
+const StateVariables = {
+  counter: 0,
+  lastTime: performance.now(),
+  lastFloor: -1,
+  autoLoavesPerSecond: 0,
+  clickValue: 1,
+  totalLoaves: 0,
+};
+
+//Upgrade Data Structure
 const UPGRADES: Record<string, Upgrade> = {
   "auto-baker": {
     id: "auto-baker",
@@ -90,7 +92,7 @@ const UPGRADES: Record<string, Upgrade> = {
   },
 };
 
-// HTML
+//HTML
 document.body.innerHTML = `
   <div id="main">
     <button id="increment" class="button"><img src="https://i.imgur.com/DIPDyK2.png" width="150" height="150"></button>
@@ -100,19 +102,13 @@ document.body.innerHTML = `
   <div id="shop"></div>
 `;
 
-// Document Constants
+//Document Constants
 const button = document.getElementById("increment")!;
 const counterElement = document.getElementById("counter")!;
 const shopElement = document.getElementById("shop")!;
 const statElement = document.getElementById("stats")!;
 
-//Shop Handling
-function getUpgradeCost(upgrade: Upgrade): number {
-  return Math.floor(
-    upgrade.cost * Math.pow(upgrade.costMultiplier, upgrade.count),
-  );
-}
-
+//Upgrade UI Handling
 function createUpgradeButton(upgrade: Upgrade, id: string): HTMLButtonElement {
   const button = document.createElement("button");
   button.id = id;
@@ -141,46 +137,47 @@ function updateShopDisplay(): void {
   StateVariables.lastFloor = currentFloor;
 
   Object.values(UPGRADES).forEach((upgrade) => {
-    if (upgrade.oneTime && upgrade.count > 0) return;
-
     const cost = getUpgradeCost(upgrade);
     const buttonId = `upgrade-button-${upgrade.id}`;
     let button = document.getElementById(buttonId) as HTMLButtonElement;
-
+    if (upgrade.oneTime && upgrade.count > 0) return;
     if (!button) {
       button = createUpgradeButton(upgrade, buttonId);
       shopElement.appendChild(button);
     }
-
     updateUpgradeButton(button, upgrade, cost);
   });
 }
 
-// Upgrade Handling
+//Upgrade UI Functionality
+function getUpgradeCost(upgrade: Upgrade): number {
+  return Math.floor(
+    upgrade.cost * Math.pow(upgrade.costMultiplier, upgrade.count),
+  );
+}
+
 function buyUpgrade(key: string): void {
   const upgrade = UPGRADES[key];
   const cost = getUpgradeCost(upgrade);
-
   if (StateVariables.counter >= cost) {
     StateVariables.counter -= cost;
     upgrade.count++;
     upgrade.effect();
-
     if (upgrade.oneTime == true) {
       const button = document.getElementById(`upgrade-button-${key}`);
       if (button) button.remove();
     }
-
     updateDisplay();
   }
 }
-// Bread Count Handling
+
 function incrementAutoIncome(deltaTime: number): void {
   const income = StateVariables.autoLoavesPerSecond * deltaTime;
   StateVariables.counter += income;
   StateVariables.totalLoaves += income;
 }
 
+//Statistics UI
 function updateCounterDisplay(): void {
   counterElement.innerHTML = `
     ${Math.trunc(StateVariables.counter)} <br> LOAVES OF BREAD
@@ -195,43 +192,38 @@ function updateStatsDisplay(): void {
     }`,
     `Loaves Baked Per Click: ${StateVariables.clickValue}`,
   ];
-
   Object.values(UPGRADES).forEach((upgrade) => {
     if (!upgrade.oneTime) {
       stats.push(`${upgrade.label}: ${upgrade.count}`);
     }
   });
-
   statElement.innerHTML = `
     STATISTICS<br>
     ${stats.join("<br>")}
   `;
 }
 
-// Display Management
+//Display Management
 function updateDisplay(): void {
   updateShopDisplay();
   updateCounterDisplay();
   updateStatsDisplay();
 }
 
-// Game Loop
+//Primary Gameloop and actions
 function gameLoop(currentTime: number): void {
   const deltaTime = (currentTime - StateVariables.lastTime) / 1000;
   StateVariables.lastTime = currentTime;
-
   incrementAutoIncome(deltaTime);
   updateDisplay();
-
   requestAnimationFrame(gameLoop);
 }
 
-//Event Listeners
 button.addEventListener("click", () => {
   StateVariables.counter += StateVariables.clickValue;
   StateVariables.totalLoaves += StateVariables.clickValue;
   updateDisplay();
 });
 
-// Game Start
+//Game Start
 requestAnimationFrame(gameLoop);
