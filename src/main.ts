@@ -7,7 +7,7 @@ type Upgrade = {
   description: string;
   cost: number;
   costMultiplier: number;
-  oneTime?: boolean;
+  oneTimeUpgrade?: boolean;
   effect: () => void;
   count: number;
   label?: string;
@@ -15,15 +15,15 @@ type Upgrade = {
 
 //Gamestate Variable Object
 const StateVariables = {
-  counter: 0,
+  loavesCount: 0,
   lastTime: performance.now(),
   lastFloor: -1,
-  autoLoavesPerSecond: 0,
-  clickValue: 1,
+  loavesPerSecond: 0,
+  loavesPerClick: 1,
   totalLoaves: 0,
 };
 
-//Upgrade Data Structure
+// Upgrade Data Structure
 const UPGRADES: Record<string, Upgrade> = {
   "auto-baker": {
     id: "auto-baker",
@@ -34,7 +34,7 @@ const UPGRADES: Record<string, Upgrade> = {
     costMultiplier: 1.2,
     count: 0,
     effect: () => {
-      StateVariables.autoLoavesPerSecond += 0.2;
+      StateVariables.loavesPerSecond += 0.2;
     },
   },
   "bakery": {
@@ -46,7 +46,7 @@ const UPGRADES: Record<string, Upgrade> = {
     costMultiplier: 1.3,
     count: 0,
     effect: () => {
-      StateVariables.autoLoavesPerSecond += 1;
+      StateVariables.loavesPerSecond += 1;
     },
   },
   "sourdough": {
@@ -59,7 +59,7 @@ const UPGRADES: Record<string, Upgrade> = {
     costMultiplier: 1.4,
     count: 0,
     effect: () => {
-      StateVariables.clickValue += 0.5;
+      StateVariables.loavesPerClick += 0.5;
     },
   },
   "oven": {
@@ -71,7 +71,7 @@ const UPGRADES: Record<string, Upgrade> = {
     costMultiplier: 1.5,
     count: 1,
     effect: () => {
-      StateVariables.clickValue += 1;
+      StateVariables.loavesPerClick += 1;
     },
   },
   "minWage": {
@@ -82,21 +82,21 @@ const UPGRADES: Record<string, Upgrade> = {
     cost: 5000,
     count: 0,
     costMultiplier: 0,
-    oneTime: true,
+    oneTimeUpgrade: true,
     effect: () => {
-      StateVariables.autoLoavesPerSecond += UPGRADES["auto-baker"].count * 0.3;
+      StateVariables.loavesPerSecond += UPGRADES["auto-baker"].count * 0.3;
       UPGRADES["auto-baker"].effect = () => {
-        StateVariables.autoLoavesPerSecond += 0.5;
+        StateVariables.loavesPerSecond += 0.5;
       };
     },
   },
 };
 
-//HTML
+// HTML
 document.body.innerHTML = `
   <div id="main">
     <button id="increment" class="button"><img src="https://i.imgur.com/DIPDyK2.png" width="150" height="150"></button>
-    <p id="counter" class="centered-text"></p>
+    <p id="loavesCount" class="centered-text"></p>
     <div class="stat-box"><p id="stats"></p></div>
   </div>
   <div id="shop"></div>
@@ -104,11 +104,11 @@ document.body.innerHTML = `
 
 //Document Constants
 const button = document.getElementById("increment")!;
-const counterElement = document.getElementById("counter")!;
+const counterElement = document.getElementById("loavesCount")!;
 const shopElement = document.getElementById("shop")!;
 const statElement = document.getElementById("stats")!;
 
-//Upgrade UI Handling
+// Upgrade UI Handling
 function createUpgradeButton(upgrade: Upgrade, id: string): HTMLButtonElement {
   const button = document.createElement("button");
   button.id = id;
@@ -123,8 +123,8 @@ function updateUpgradeButton(
   cost: number,
 ): void {
   button.innerHTML = `${upgrade.name}<br> Cost: ${cost} loaves`;
-  button.disabled = StateVariables.counter < cost;
-  if (!upgrade.oneTime) {
+  button.disabled = StateVariables.loavesCount < cost;
+  if (!upgrade.oneTimeUpgrade) {
     button.title = `${upgrade.description}\nOwned: ${upgrade.count}`;
   } else {
     button.title = `${upgrade.description}\n`;
@@ -132,7 +132,7 @@ function updateUpgradeButton(
 }
 
 function updateShopDisplay(): void {
-  const currentFloor = Math.floor(StateVariables.counter);
+  const currentFloor = Math.floor(StateVariables.loavesCount);
   if (currentFloor === StateVariables.lastFloor) return;
   StateVariables.lastFloor = currentFloor;
 
@@ -140,7 +140,7 @@ function updateShopDisplay(): void {
     const cost = getUpgradeCost(upgrade);
     const buttonId = `upgrade-button-${upgrade.id}`;
     let button = document.getElementById(buttonId) as HTMLButtonElement;
-    if (upgrade.oneTime && upgrade.count > 0) return;
+    if (upgrade.oneTimeUpgrade && upgrade.count > 0) return;
     if (!button) {
       button = createUpgradeButton(upgrade, buttonId);
       shopElement.appendChild(button);
@@ -149,7 +149,7 @@ function updateShopDisplay(): void {
   });
 }
 
-//Upgrade UI Functionality
+// Upgrade UI Functionality
 function getUpgradeCost(upgrade: Upgrade): number {
   return Math.floor(
     upgrade.cost * Math.pow(upgrade.costMultiplier, upgrade.count),
@@ -159,11 +159,11 @@ function getUpgradeCost(upgrade: Upgrade): number {
 function buyUpgrade(key: string): void {
   const upgrade = UPGRADES[key];
   const cost = getUpgradeCost(upgrade);
-  if (StateVariables.counter >= cost) {
-    StateVariables.counter -= cost;
+  if (StateVariables.loavesCount >= cost) {
+    StateVariables.loavesCount -= cost;
     upgrade.count++;
     upgrade.effect();
-    if (upgrade.oneTime == true) {
+    if (upgrade.oneTimeUpgrade == true) {
       const button = document.getElementById(`upgrade-button-${key}`);
       if (button) button.remove();
     }
@@ -172,28 +172,26 @@ function buyUpgrade(key: string): void {
 }
 
 function incrementAutoIncome(deltaTime: number): void {
-  const income = StateVariables.autoLoavesPerSecond * deltaTime;
-  StateVariables.counter += income;
+  const income = StateVariables.loavesPerSecond * deltaTime;
+  StateVariables.loavesCount += income;
   StateVariables.totalLoaves += income;
 }
 
-//Statistics UI
+// Statistics UI
 function updateCounterDisplay(): void {
   counterElement.innerHTML = `
-    ${Math.trunc(StateVariables.counter)} <br> LOAVES OF BREAD
+    ${Math.trunc(StateVariables.loavesCount)} <br> LOAVES OF BREAD
   `;
 }
 
 function updateStatsDisplay(): void {
   const stats: string[] = [
     `Total Loaves Baked: ${Math.trunc(StateVariables.totalLoaves)}`,
-    `Loaves Baking Per Second: ${
-      StateVariables.autoLoavesPerSecond.toFixed(2)
-    }`,
-    `Loaves Baked Per Click: ${StateVariables.clickValue}`,
+    `Loaves Baking Per Second: ${StateVariables.loavesPerSecond.toFixed(2)}`,
+    `Loaves Baked Per Click: ${StateVariables.loavesPerClick}`,
   ];
   Object.values(UPGRADES).forEach((upgrade) => {
-    if (!upgrade.oneTime) {
+    if (!upgrade.oneTimeUpgrade) {
       stats.push(`${upgrade.label}: ${upgrade.count}`);
     }
   });
@@ -203,14 +201,14 @@ function updateStatsDisplay(): void {
   `;
 }
 
-//Display Management
+// Display Management
 function updateDisplay(): void {
   updateShopDisplay();
   updateCounterDisplay();
   updateStatsDisplay();
 }
 
-//Primary Gameloop and actions
+// Primary Gameloop and actions
 function gameLoop(currentTime: number): void {
   const deltaTime = (currentTime - StateVariables.lastTime) / 1000;
   StateVariables.lastTime = currentTime;
@@ -220,10 +218,10 @@ function gameLoop(currentTime: number): void {
 }
 
 button.addEventListener("click", () => {
-  StateVariables.counter += StateVariables.clickValue;
-  StateVariables.totalLoaves += StateVariables.clickValue;
+  StateVariables.loavesCount += StateVariables.loavesPerClick;
+  StateVariables.totalLoaves += StateVariables.loavesPerClick;
   updateDisplay();
 });
 
-//Game Start
+// Game Start
 requestAnimationFrame(gameLoop);
