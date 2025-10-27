@@ -9,7 +9,7 @@ type Upgrade = {
   costMultiplier: number;
   oneTimeUpgrade?: boolean;
   effect: () => void;
-  count: number;
+  upgradeCount: number;
   label?: string;
 };
 
@@ -32,7 +32,7 @@ const UPGRADES: Record<string, Upgrade> = {
     description: "Hire a baker: Produces 0.2 loaves per second.",
     cost: 10,
     costMultiplier: 1.2,
-    count: 0,
+    upgradeCount: 0,
     effect: () => {
       StateVariables.loavesPerSecond += 0.2;
     },
@@ -44,7 +44,7 @@ const UPGRADES: Record<string, Upgrade> = {
     description: "Open a bakery: Produces a loaf every second.",
     cost: 50,
     costMultiplier: 1.3,
-    count: 0,
+    upgradeCount: 0,
     effect: () => {
       StateVariables.loavesPerSecond += 1;
     },
@@ -57,7 +57,7 @@ const UPGRADES: Record<string, Upgrade> = {
       "Give rise to a sourdough starter: Produce an extra half a loaf per click",
     cost: 75,
     costMultiplier: 1.4,
-    count: 0,
+    upgradeCount: 0,
     effect: () => {
       StateVariables.loavesPerClick += 0.5;
     },
@@ -69,7 +69,7 @@ const UPGRADES: Record<string, Upgrade> = {
     description: "Upgrade your oven: Produce an extra loaf per click.",
     cost: 100,
     costMultiplier: 1.5,
-    count: 1,
+    upgradeCount: 1,
     effect: () => {
       StateVariables.loavesPerClick += 1;
     },
@@ -80,11 +80,12 @@ const UPGRADES: Record<string, Upgrade> = {
     description:
       "Pay your workers better: Bakers now produce 0.5 loaves per second.\nPURCHASEABLE ONCE",
     cost: 5000,
-    count: 0,
+    upgradeCount: 0,
     costMultiplier: 0,
     oneTimeUpgrade: true,
     effect: () => {
-      StateVariables.loavesPerSecond += UPGRADES["auto-baker"].count * 0.3;
+      StateVariables.loavesPerSecond += UPGRADES["auto-baker"].upgradeCount *
+        0.3;
       UPGRADES["auto-baker"].effect = () => {
         StateVariables.loavesPerSecond += 0.5;
       };
@@ -125,22 +126,19 @@ function updateUpgradeButton(
   button.innerHTML = `${upgrade.name}<br> Cost: ${cost} loaves`;
   button.disabled = StateVariables.loavesCount < cost;
   if (!upgrade.oneTimeUpgrade) {
-    button.title = `${upgrade.description}\nOwned: ${upgrade.count}`;
+    button.title = `${upgrade.description}\nOwned: ${upgrade.upgradeCount}`;
   } else {
     button.title = `${upgrade.description}\n`;
   }
 }
 
+// Update shop UI elements only once every time the amount of loaves increases to avoid unecessary update calls.
 function updateShopDisplay(): void {
-  const currentFloor = Math.floor(StateVariables.loavesCount);
-  if (currentFloor === StateVariables.lastFloor) return;
-  StateVariables.lastFloor = currentFloor;
-
   Object.values(UPGRADES).forEach((upgrade) => {
     const cost = getUpgradeCost(upgrade);
     const buttonId = `upgrade-button-${upgrade.id}`;
     let button = document.getElementById(buttonId) as HTMLButtonElement;
-    if (upgrade.oneTimeUpgrade && upgrade.count > 0) return;
+    if (upgrade.oneTimeUpgrade && upgrade.upgradeCount > 0) return;
     if (!button) {
       button = createUpgradeButton(upgrade, buttonId);
       shopElement.appendChild(button);
@@ -150,9 +148,10 @@ function updateShopDisplay(): void {
 }
 
 // Upgrade UI Functionality
+// cost = cost(costMultiplier^upgradeCount)
 function getUpgradeCost(upgrade: Upgrade): number {
   return Math.floor(
-    upgrade.cost * Math.pow(upgrade.costMultiplier, upgrade.count),
+    upgrade.cost * Math.pow(upgrade.costMultiplier, upgrade.upgradeCount),
   );
 }
 
@@ -161,7 +160,7 @@ function buyUpgrade(key: string): void {
   const cost = getUpgradeCost(upgrade);
   if (StateVariables.loavesCount >= cost) {
     StateVariables.loavesCount -= cost;
-    upgrade.count++;
+    upgrade.upgradeCount++;
     upgrade.effect();
     if (upgrade.oneTimeUpgrade == true) {
       const button = document.getElementById(`upgrade-button-${key}`);
@@ -183,7 +182,7 @@ function updateCounterDisplay(): void {
     ${Math.trunc(StateVariables.loavesCount)} <br> LOAVES OF BREAD
   `;
 }
-
+// update individual statistics, and iterate through Upgrades to load and display their respective statistic text content
 function updateStatsDisplay(): void {
   const stats: string[] = [
     `Total Loaves Baked: ${Math.trunc(StateVariables.totalLoaves)}`,
@@ -192,7 +191,7 @@ function updateStatsDisplay(): void {
   ];
   Object.values(UPGRADES).forEach((upgrade) => {
     if (!upgrade.oneTimeUpgrade) {
-      stats.push(`${upgrade.label}: ${upgrade.count}`);
+      stats.push(`${upgrade.label}: ${upgrade.upgradeCount}`);
     }
   });
   statElement.innerHTML = `
