@@ -96,11 +96,20 @@ const UPGRADES: Record<string, Upgrade> = {
 // HTML
 document.body.innerHTML = `
   <div id="main">
-    <button id="increment" class="button"><img src="https://i.imgur.com/DIPDyK2.png" width="150" height="150"></button>
-    <p id="loavesCount" class="centered-text"></p>
-    <div class="stat-box"><p id="stats"></p></div>
+    <div class="main-layout">
+      <div class="game-container">
+        <button id="increment" class="button">
+          <img src="https://i.imgur.com/DIPDyK2.png" width="150" height="150">
+        </button>
+        <p id="loavesCount" class="centered-text"></p>
+        <div class="stat-box"><p id="stats"></p></div>
+      </div>
+      <div id="shop">
+        <h2 class="shop-title">Upgrades</h2>
+        <womp></womp>
+      </div>
+    </div>
   </div>
-  <div id="shop"></div>
 `;
 
 //Document Constants
@@ -182,21 +191,32 @@ function updateCounterDisplay(): void {
     ${Math.trunc(StateVariables.loavesCount)} <br> LOAVES OF BREAD
   `;
 }
-// update individual statistics, and iterate through Upgrades to load and display their respective statistic text content
+
+// Statistics Handling
+function formatStatLine(line: string, totalWidth: number = 40): string {
+  const [label, value] = line.split(":").map((s) => s.trim());
+  const dotsNeeded = Math.max(0, totalWidth - (label.length + value.length));
+  const dots = ".".repeat(dotsNeeded);
+  return `${label}${dots}${value}`;
+}
+
 function updateStatsDisplay(): void {
   const stats: string[] = [
     `Total Loaves Baked: ${Math.trunc(StateVariables.totalLoaves)}`,
     `Loaves Baking Per Second: ${StateVariables.loavesPerSecond.toFixed(2)}`,
     `Loaves Baked Per Click: ${StateVariables.loavesPerClick}`,
   ];
+
   Object.values(UPGRADES).forEach((upgrade) => {
     if (!upgrade.oneTimeUpgrade) {
       stats.push(`${upgrade.label}: ${upgrade.upgradeCount}`);
     }
   });
+
+  const formatted = stats.map((line) => formatStatLine(line));
+
   statElement.innerHTML = `
-    STATISTICS<br>
-    ${stats.join("<br>")}
+    <pre class="stats-text">STATISTICS\n${formatted.join("\n")}</pre>
   `;
 }
 
@@ -216,10 +236,25 @@ function gameLoop(currentTime: number): void {
   requestAnimationFrame(gameLoop);
 }
 
+/* Inspired by benho612, repository linked above */
+let spinning = false;
+let spinTimeout: ReturnType<typeof setTimeout>;
+
 button.addEventListener("click", () => {
   StateVariables.loavesCount += StateVariables.loavesPerClick;
   StateVariables.totalLoaves += StateVariables.loavesPerClick;
   updateDisplay();
+
+  if (!spinning) {
+    spinning = true;
+    button.classList.add("spin");
+  }
+
+  clearTimeout(spinTimeout);
+  spinTimeout = setTimeout(() => {
+    button.classList.remove("spin");
+    spinning = false;
+  }, 400);
 });
 
 // Game Start

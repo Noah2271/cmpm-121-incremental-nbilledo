@@ -1,102 +1,59 @@
+/* Credit to benho612 for game-container layout + spin animation https://github.com/benho612/CMPM1212-D1-Assignement" */
+/* Credit to akiyamaethan for squish animation used on upgrade buttons https://github.com/akiyamaethan/d1 */
 /* Body */
 body {
   margin: 0;
   padding: 0;
   font-family: "Press Start 2P", monospace;
-  background: #f9f5e9;
-  color: #333;
+  color: #f7b336;
   text-align: center;
-  background-color: black;
+  background-color: rgb(10, 10, 10);
 }
 
-/* Main Content */
-#main {
+.main-layout {
+  /* Inspired by benho612, repository linked above */
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  min-height: 20vh;
-  gap: 20px;
-  padding: 20px;
+  align-items: flex-start;
+  gap: 24px;
 }
 
-.stat-box {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  padding: 10px;
-  font-size: 16px;
-  font-family: "Press Start 2P", monospace;
-  background-color: #000000;
-  outline: none;
-  color: #f5c16c;
-  z-index: 1000;
-  text-align: left;
-}
-
-/* Button Styling */
-.button {
-  width: 200px;
-  height: 200px;
-  border: none;
-  background: #f5c16c;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-radius: 50%;
-  cursor: pointer;
-  outline: none;
+.game-container {
+  /* Inspired by benho612, repository linked above */
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 0 10px rgba(245, 193, 108, 0.5);
-  animation: pulse 2.5s infinite ease-in-out;
-  animation: breathe 3s infinite ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: min(720px, 92vw);
+  margin: 8vh auto;
+  padding: 28px 22px 32px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  background: rgba(131, 61, 21, 0.55);
 }
 
-@keyframes breathe {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(0.95);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(245, 193, 108, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 35px rgba(245, 193, 108, 1);
-  }
-}
-
-.button:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 0 25px rgba(245, 193, 108, 1);
-}
-
-.button:active {
-  transform: translateY(0) scale(0.90);
-  box-shadow: 0 0 50px rgba(245, 193, 108, 0.7);
-}
-
-.button::before {
+.game-container::before {
+  /* Inspired by benho612, repository linked above */
   content: "";
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
-  border-radius: 50%;
-  background: radial-gradient(rgba(245, 193, 108, 0.2), transparent 100%);
+  inset: 0;
+  background: url("https://i.imgur.com/44Gwbmy.jpeg") center/cover no-repeat;
+  filter: blur(2px);
+  transform: scale(1.1);
   z-index: -1;
-  animation: aura 3s infinite ease-in-out;
+}
+
+/* Main Button */
+@keyframes spin-continuous {
+  /* Inspired by benho612, repository linked above */
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.button.spin {
+  animation: spin-continuous 0.3s linear infinite;
 }
 
 @keyframes aura {
@@ -110,26 +67,95 @@ body {
   }
 }
 
-@keyframes sparkle {
-  0%, 100% {
-    opacity: 0;
-    transform: translateY(0) scale(0.5) rotate(0deg);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-10px) scale(1.2) rotate(20deg);
-  }
+.button {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 8vh auto;
+  background: #13100c;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 1.2rem;
+  font-weight: bold;
+
+  box-shadow: 0 0 10px rgba(5, 5, 5, 0.5);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.button:hover {
+  box-shadow: 0 0 25px rgb(26, 25, 23);
+}
+
+.button:active {
+  box-shadow: 0 0 50px rgba(37, 33, 27, 0.7);
+}
+
+/* Aura behind button */
+.button::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: radial-gradient(rgba(245, 193, 108, 0.2), transparent 100%);
+  z-index: -1;
+  animation: aura 3s infinite ease-in-out;
 }
 
 /* Counter Text */
 .centered-text {
-  text-align: center;
+  background: rgba(22, 2, 2, 0.55);
+  padding: 24px;
+  border-radius: 16px;
+  width: 280px;
+  box-shadow: 0 10px 30px rgba(12, 0, 0, 0.35);
+  margin: 8vh auto;
   font-size: 1.5rem;
-  color: #f5c16c;
+  color: #f0e7d8;
   line-height: 1.4;
+  text-align: center;
+}
+
+/* Stat Box */
+.stat-box {
+  background: rgba(22, 2, 2, 0.55);
+  padding: 40px;
+  border-radius: 16px;
+  width: 350px;
+  box-shadow: 0 10px 30px rgba(12, 0, 0, 0.35);
+  color: white;
+  text-align: center;
+  margin: 8vh auto;
+}
+
+.stats-text {
+  font-family: "Press Start 2P", monospace;
+  white-space: pre;
+  color: #f0e7d8;
+  text-align: left;
+  line-height: 1.6;
+  font-size: 0.55rem;
 }
 
 /* Upgrade Shop */
+@keyframes upgradeHover {
+  /* Inspired by akiyamaethan, repository linked above */
+  0%, 100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(0.95);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+}
+
 #shop {
   display: flex;
   flex-direction: column;
@@ -145,10 +171,9 @@ body {
   padding: 12px 20px;
   font-size: 1rem;
   background-color: #000000;
-  border: 2px solid #ffffff;
+  border: 10px solid #ffffff;
   color: white;
   font-family: "Press Start 2P", monospace;
-  border-width: 10px;
   cursor: pointer;
   width: 100%;
   max-width: 300px;
@@ -156,10 +181,10 @@ body {
 }
 
 .upgrade-button:hover:not(:disabled) {
-  background-color: #000000;
   transform: translateY(-1px);
   border-color: #ffd375;
   box-shadow: 0 0 35px rgba(245, 193, 108, 1);
+  animation: upgradeHover 0.1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .upgrade-button:disabled {
